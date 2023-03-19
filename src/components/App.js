@@ -1,54 +1,54 @@
-import { useState, useEffect } from "react";
+import React, { useState } from 'react';
+import '../styles/App.css';
 
-function App() {
+const App = () => {
+
   const [users, setUsers] = useState([]);
-  const [isFetching, setIsFetching] = useState(false);
-  const [isAscending, setIsAscending] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [sortAscending, setSortAscending] = useState(true);  
 
-  useEffect(() => {
-    if (isFetching) {
-      fetchUsers();
+  const handleFetch = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('https://content.newtonschool.co/v1/pr/main/users');
+      const data = await response.json();
+      setUsers(data);
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error);
     }
-  }, [isFetching]);
+  }
 
-  const fetchUsers = async () => {
-    const response = await fetch("https://content.newtonschool.co/v1/pr/main/users");
-    const data = await response.json();
-    setUsers(data);
-    setIsFetching(false);
-  };
-
-  const sortUsers = () => {
-    if (isAscending) {
+  const handleSort = () => {
+    setSortAscending(!sortAscending);
+    if (sortAscending) {
       setUsers([...users].sort((a, b) => a.name.length - b.name.length));
-      setIsAscending(false);
     } else {
       setUsers([...users].sort((a, b) => b.name.length - a.name.length));
-      setIsAscending(true);
     }
-  };
+  }
 
   return (
-    <div>
-      <h1>Fetch Users Data</h1>
-      <button onClick={() => setIsFetching(true)}>Fetch User Data</button>
-      <button className="sort-btn" onClick={sortUsers}>
-        {isAscending ? "Sort by name length (ascending)" : "Sort by name length (descending)"}
+    <div id="main">
+      <h2>User List</h2>
+      <button className="fetch-data-btn" onClick={handleFetch}>Fetch User Data</button>
+      <button className="sort-btn" onClick={handleSort}>
+        {sortAscending ? "Sort by name length (ascending)" : "Sort by name length (descending)"}
       </button>
-      {isFetching && <div className="loader">Loading...</div>}
-      {!isFetching && users.length > 0 && (
-        <div>
-          {users.map((user) => (
-            <div key={user.id}>
-              <div className="id-section">{user.id}</div>
-              <p className="name">{user.name}</p>
-              <p className="email">{user.email}</p>
-            </div>
-          ))}
-        </div>
-      )}
+      {isLoading ? <p>Loading...</p> :
+      <div className='users-section'>
+        {users.map((user) => (
+          <li key={user.id}>
+            <section className='id-section'>{user.id}</section>
+            <section className='name-email-section'>
+              <p className='name'>Name: {user.name}</p>
+              <p className='email'>Email: {user.email}</p>
+            </section>
+          </li>
+        ))}
+      </div>}
     </div>
-  );
+  )
 }
 
 export default App;
